@@ -30,44 +30,36 @@ public class BeaconReferenceApplication extends Application implements Bootstrap
     public void onCreate() {
         super.onCreate();
         BeaconManager beaconManager = org.altbeacon.beacon.BeaconManager.getInstanceForApplication(this);
+        // 預設抓altbeacon 要抓ibeacon就用下面兩行
+        beaconManager.getBeaconParsers().clear();
+        beaconManager.getBeaconParsers().add(new BeaconParser(). setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"));
 
-        // By default the AndroidBeaconLibrary will only find AltBeacons.  If you wish to make it
-        // find a different type of beacon, you must specify the byte layout for that beacon's
-        // advertisement with a line like below.  The example shows how to find a beacon with the
-        // same byte layout as AltBeacon but with a beaconTypeCode of 0xaabb.  To find the proper
-        // layout expression for other beacon types, do a web search for "setBeaconLayout"
-        // including the quotes.
-        //
-        //beaconManager.getBeaconParsers().clear();
-        //beaconManager.getBeaconParsers().add(new BeaconParser().
-        //        setBeaconLayout("m:2-3=beac,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25"));
-
-        Log.d(TAG, "setting up background monitoring for beacons and power saving");
         // wake up the app when a beacon is seen
-        Region region = new Region("backgroundRegion",
-                null, null, null);
+//        搜尋到beacon時喚醒 (未清楚)
+//        設置beacon區域
+        Region region = new Region("backgroundRegion", null, null, null);
         regionBootstrap = new RegionBootstrap(this, region);
 
         // simply constructing this class and holding a reference to it in your custom Application
         // class will automatically cause the BeaconLibrary to save battery whenever the application
         // is not visible.  This reduces bluetooth power usage by about 60%
+        //省電
         backgroundPowerSaver = new BackgroundPowerSaver(this);
 
-        // If you wish to test beacon detection in the Android Emulator, you can use code like this:
-        // BeaconManager.setBeaconSimulator(new TimedBeaconSimulator() );
-        // ((TimedBeaconSimulator) BeaconManager.getBeaconSimulator()).createTimedSimulatedBeacons();
+        Log.d(TAG, "BeaconReferenceApplication_onCreate");
     }
 
+//    BootstrapNotifier實作 進入區域時
     @Override
     public void didEnterRegion(Region arg0) {
         // In this example, this class sends a notification to the user whenever a Beacon
         // matching a Region (defined above) are first seen.
-        Log.d(TAG, "did enter region.");
+        Log.d(TAG, "BeaconReferenceApplication_didEnterRegion");
         if (!haveDetectedBeaconsSinceBoot) {
-            Log.d(TAG, "auto launching MainActivity");
-
+            Log.d(TAG, "自動帶入MonitoringActivity");
             // The very first time since boot that we detect an beacon, we launch the
             // MainActivity
+            //進入monitoringActivity
             Intent intent = new Intent(this, MonitoringActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             // Important:  make sure to add android:launchMode="singleInstance" in the manifest
@@ -77,13 +69,16 @@ public class BeaconReferenceApplication extends Application implements Bootstrap
             haveDetectedBeaconsSinceBoot = true;
         } else {
             if (monitoringActivity != null) {
+                //顯示APP時第二次發現
                 // If the Monitoring Activity is visible, we log info about the beacons we have
                 // seen on its display
-                monitoringActivity.logToDisplay("I see a beacon again" );
+                monitoringActivity.logToDisplay("我又看到Beacon了!" );
             } else {
+//              第二次發現Beacon時，沒有APP，推送通知
                 // If we have already seen beacons before, but the monitoring activity is not in
                 // the foreground, we send a notification to the user on subsequent detections.
-                Log.d(TAG, "Sending notification.");
+
+                Log.d(TAG, "發送訊息");
                 sendNotification();
             }
         }
@@ -93,23 +88,28 @@ public class BeaconReferenceApplication extends Application implements Bootstrap
 
     @Override
     public void didExitRegion(Region region) {
-        if (monitoringActivity != null) {
-            monitoringActivity.logToDisplay("I no longer see a beacon.");
+        Log.d(TAG, "BeaconReferenceApplication_didExitRegion");
+        if (monitoringActivity != null) {//APP使用中時
+            monitoringActivity.logToDisplay("我離開Beacon範圍了");
         }
     }
 
+    //偵測Beacon
     @Override
     public void didDetermineStateForRegion(int state, Region region) {
-        if (monitoringActivity != null) {
-            monitoringActivity.logToDisplay("I have just switched from seeing/not seeing beacons: " + state);
+        Log.d(TAG, "BeaconReferenceApplication_didDetermineStateForRegion");
+
+        if (monitoringActivity != null) {//APP使用中時
+            monitoringActivity.logToDisplay("Beacon搜尋狀態(0/無 1/有): " + state);
         }
     }
 
     private void sendNotification() {
+        Log.d(TAG, "BeaconReferenceApplication_sendNotification");
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this)
-                        .setContentTitle("Beacon Reference Application")
-                        .setContentText("An beacon is nearby.")
+                        .setContentTitle("我是推撥")
+                        .setContentText("這是測試推撥訊息喔")
                         .setSmallIcon(R.drawable.ic_launcher);
 
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
@@ -125,7 +125,10 @@ public class BeaconReferenceApplication extends Application implements Bootstrap
         notificationManager.notify(1, builder.build());
     }
 
+//    (顯示)onResume 設值
+//    (跳出)onPause  設空
     public void setMonitoringActivity(MonitoringActivity activity) {
+        Log.d(TAG, "BeaconReferenceApplication_setMonitoringActivity");
         this.monitoringActivity = activity;
     }
 

@@ -25,26 +25,31 @@ public class RangingActivity extends Activity implements BeaconConsumer {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ranging);
-
         beaconManager.bind(this);
+        Log.d(TAG,"RangingActivity_onCreate");
     }
 
     @Override 
     protected void onDestroy() {
         super.onDestroy();
         beaconManager.unbind(this);
+        Log.d(TAG,"RangingActivity_onDestroy");
     }
 
+//  跳出
     @Override 
     protected void onPause() {
         super.onPause();
         if (beaconManager.isBound(this)) beaconManager.setBackgroundMode(true);
+        Log.d(TAG,"RangingActivity_onPause");
     }
 
+//  顯示
     @Override 
     protected void onResume() {
         super.onResume();
         if (beaconManager.isBound(this)) beaconManager.setBackgroundMode(false);
+        Log.d(TAG,"RangingActivity_onResume");
     }
 
     @Override
@@ -52,8 +57,8 @@ public class RangingActivity extends Activity implements BeaconConsumer {
         beaconManager.setRangeNotifier(new RangeNotifier() {
            @Override
            public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
+               Log.e(TAG, "didRangeBeaconsInRegion:"+beacons.size());
               if (beacons.size() > 0) {
-                 //EditText editText = (EditText)RangingActivity.this.findViewById(R.id.rangingText);
                  Beacon firstBeacon = beacons.iterator().next();
                  logToDisplay("The first beacon " + firstBeacon.toString() + " is about " + firstBeacon.getDistance() + " meters away.");
               }
@@ -70,7 +75,7 @@ public class RangingActivity extends Activity implements BeaconConsumer {
         runOnUiThread(new Runnable() {
             public void run() {
                 EditText editText = (EditText)RangingActivity.this.findViewById(R.id.rangingText);
-                editText.append(line+"\n");
+                editText.setText(line);
             }
         });
     }

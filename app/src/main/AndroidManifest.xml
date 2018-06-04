@@ -13,11 +13,13 @@
         <activity
             android:name="org.altbeacon.beaconreference.MonitoringActivity"
             android:label="@string/app_name" >
+            <!-- 一開始先到MonitoringActivity -->
             <intent-filter>
 				<action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name="org.altbeacon.beaconreference.RangingActivity"
             android:label="@string/app_name" >

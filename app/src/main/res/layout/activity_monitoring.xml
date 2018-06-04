@@ -30,8 +30,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:onClick="onRangingClicked"
         android:layout_below="@+id/monitoringText"
-        android:text="Start Ranging" />
+        android:onClick="onRangingClicked"
+        android:text="開始測距" />
 
 </RelativeLayout>
